@@ -8,58 +8,51 @@ class Field:
     def __str__(self):
         return str(self.value)
 
-# Клас для зберігання імені контакту. Обов'язкове поле.
+# Клас для зберігання імені контакту. Обов'язкове поле
 class Name(Field):
     def __init__(self, value):
         if not value:
-            raise ValueError('Name is required')
+            raise ValueError('Name is required') # Помилка якщо імʼя не додане
         super().__init__(value)
 
-# Клас для зберігання номера телефону. Має валідацію формату 10 цифр, букви не допускаються.
+# Клас для зберігання номера телефону
 class Phone(Field):
     def __init__(self, value):
+        # Валідація номера телефону - повинен складатися з цифр і мати довжину 10 знаків
         if not value.isdigit() or len(value) != 10:
             raise ValueError(f'Phone number: "{value}" is incorrect')
         super().__init__(value)
 
-# Клас для зберігання інформації про контакт, включаючи ім'я та список телефонів.
+# Клас для зберігання інформації про контакт, включаючи ім'я та список телефонів
 class Record:
     def __init__(self, name):
         self.name = Name(name)
         self.phones = []
 
-    # Метод який додає телефон у список контактів
+    # Метод який додає телефон відповідного формату у список контактів
     def add_phone(self, phone):
-        # Перевірка, чи є телефон у списку контактів
-        if any(p.value == phone for p in self.phones):
-            print(f'The phone: {phone} already exists in contact name: {self.name}')
-            return
-        try:
-            self.phones.append(Phone(phone))
-        except ValueError as e: # Вивід помилки в разі якщо телефон не відповідає умовам
-            raise ValueError(f'Contact name: {self.name.value}, phone: "{e}" is incorrect')
+        self.phones.append(Phone(phone))
 
     # Метод видалення телефону зі списку контактів
     def remove_phone(self, phone):
-        for p in self.phones:
-            if p.value == phone:
-                self.phones.remove(p)
-                return f'{phone} removed from {self.name}'
-        # Вивід помилки в разі якщо телефон не знайдено в списку контактів
-        raise ValueError(f'The phone: {phone} not found in contact name: {self.name}')
+        p = self.find_phone(phone)
+        if p:
+            self.phones.remove(p)
 
-    # Метод заміни старого номеру телефону на новий. Якщо номер не відповідає умовам або не знайдено, то виводиться помилка ValueError
+    # Метод заміни старого номеру телефону на новий
     def edit_phone(self, old_phone, new_phone):
-        for p in self.phones:
-            if p.value == old_phone:
-                p.value = new_phone
-                return Phone(new_phone) # Валідація формату нового номеру телефону
-        # Вивід помилки в разі якщо старий номер телефону не знайдено в списку контактів
-        raise ValueError(f'The phone: {old_phone} not found in contact name: {self.name}')
+        if old_phone == new_phone: # Перевірка, щоб номери не були однаковими
+            raise ValueError('Cannot edit same phone')
+        if not self.find_phone(old_phone): # Перевірка існування старого номера телефону
+            raise ValueError(f'The phone not found')
+        self.remove_phone(old_phone)
+        self.add_phone(new_phone)
 
-    # Метод для пошуку номера телефона в списку контактів. Якщо не знайдено, то повертає None
+    # Метод для пошуку номера телефона в списку контактів, якщо не знайдено, то повертає None
     def find_phone(self, phone):
-        return next((p for p in self.phones if p.value == phone), None)
+        if Phone(phone): # Валідація номера телефону
+            return next((p for p in self.phones if p.value == phone), None)
+        return None
 
     def __str__(self):
         return f"Contact name: {self.name.value}, phones: {'; '.join(p.value for p in self.phones)}"
@@ -69,7 +62,7 @@ class AddressBook(UserDict):
     def add_record(self, record: Record):
         self.data[record.name.value] = record
 
-    # Метод який знаходить запис за ім'ям. Якщо імʼя не знайдено, повертає None
+    # Метод який знаходить запис за ім'ям. Якщо імʼя не знайдено, то повертає None
     def find(self, name):
         return self.data.get(name, None)
 
@@ -78,10 +71,11 @@ class AddressBook(UserDict):
         if name in self.data:
             del self.data[name]
         else:
-            print(f'Contact name: {name} not found') # Виводить повідомлення в разі якщо імʼя не існує
+            raise ValueError(f'The name: {name} does not exist') # Якщо імʼя не знайдено - виведе помилку
 
     def __str__(self):
         return '\n'.join(str(record) for record in self.data.values())
+
 
 # Створення нової адресної книги
 book = AddressBook()
@@ -121,14 +115,13 @@ book.delete("Jane")
 Нижче додатковий контакт який використовувався для перевірити інші варіантів помилок
 та роботи коду
 '''
-
 # mike = Record("Mike")
 # mike.add_phone("ukr0983345690")
 # mike.add_phone("0983345690")
 # mike.add_phone("0903345690")
 # mike.add_phone("0975555555")
 # mike.add_phone("0975555555")
-# # book.add_record(mike)
+# book.add_record(mike)
 
 # print(book)
 # print(book.find('Mike'))
@@ -139,3 +132,4 @@ book.delete("Jane")
 # mike.edit_phone('0975555555', "9876543230")
 # mike.edit_phone('0975555555', "ukr9876543230")
 # print(book.find('Mike'))
+# print(mike.find_phone("0983345690"))
