@@ -45,14 +45,12 @@ class Record:
             raise ValueError('Cannot edit same phone')
         if not self.find_phone(old_phone): # Перевірка існування старого номера телефону
             raise ValueError(f'The phone not found')
-        self.remove_phone(old_phone)
         self.add_phone(new_phone)
+        self.remove_phone(old_phone)
 
     # Метод для пошуку номера телефона в списку контактів, якщо не знайдено, то повертає None
     def find_phone(self, phone):
-        if Phone(phone): # Валідація номера телефону
-            return next((p for p in self.phones if p.value == phone), None)
-        return None
+        return next((p for p in self.phones if p.value == phone), None)
 
     def __str__(self):
         return f"Contact name: {self.name.value}, phones: {'; '.join(p.value for p in self.phones)}"
@@ -110,26 +108,3 @@ print(f"{john.name}: {found_phone}")  # Виведення: John: 5555555555
 # Видалення запису Jane
 book.delete("Jane")
 
-
-'''
-Нижче додатковий контакт який використовувався для перевірити інші варіантів помилок
-та роботи коду
-'''
-# mike = Record("Mike")
-# mike.add_phone("ukr0983345690")
-# mike.add_phone("0983345690")
-# mike.add_phone("0903345690")
-# mike.add_phone("0975555555")
-# mike.add_phone("0975555555")
-# book.add_record(mike)
-
-# print(book)
-# print(book.find('Mike'))
-# book.delete('Mike')
-# print(book.find('Mike'))
-# mike.remove_phone('0983345690')
-# print(book.find('Mike'))
-# mike.edit_phone('0975555555', "9876543230")
-# mike.edit_phone('0975555555', "ukr9876543230")
-# print(book.find('Mike'))
-# print(mike.find_phone("0983345690"))
